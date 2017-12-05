@@ -240,6 +240,7 @@ class Harvest(p.SingletonPlugin, DefaultDatasetForm, DefaultTranslation):
         map.connect('harvest_job_list', '/' + DATASET_TYPE_NAME + '/{source}/job', controller=controller, action='list_jobs')
         map.connect('harvest_job_show_last', '/' + DATASET_TYPE_NAME + '/{source}/job/last', controller=controller, action='show_last_job')
         map.connect('harvest_job_show', '/' + DATASET_TYPE_NAME + '/{source}/job/{id}', controller=controller, action='show_job')
+        map.connect('harvest_job_abort', '/' + DATASET_TYPE_NAME + '/{source}/job/{id}/abort', controller=controller, action='abort_job')
 
         map.connect('harvest_object_show', '/' + DATASET_TYPE_NAME + '/object/:id', controller=controller, action='show_object')
         map.connect('harvest_object_for_dataset_show', '/dataset/harvest_object/:id', controller=controller, action='show_object', ref_type='dataset')
@@ -286,6 +287,7 @@ class Harvest(p.SingletonPlugin, DefaultDatasetForm, DefaultTranslation):
         from ckanext.harvest import helpers as harvest_helpers
         return {
                 'package_list_for_source': harvest_helpers.package_list_for_source,
+                'package_count_for_source': harvest_helpers.package_count_for_source,
                 'harvesters_info': harvest_helpers.harvesters_info,
                 'harvester_types': harvest_helpers.harvester_types,
                 'harvest_frequencies': harvest_helpers.harvest_frequencies,
