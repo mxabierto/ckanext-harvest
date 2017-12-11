@@ -397,8 +397,8 @@ class HarvesterBase(SingletonPlugin):
            tags = [munge_tag(t) for t in tags if munge_tag(t) != '']                
            tags = list(set(tags))
            return tags
-           
-        return tags      
+
+        return tags
 
     @classmethod
     def last_error_free_job(cls, harvest_job):

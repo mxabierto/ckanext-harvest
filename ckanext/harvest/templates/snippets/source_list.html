@@ -15,9 +15,9 @@ Example:
 
 #}
 {% if sources %}
-  <ul class="{{ list_class or 'dataset-list unstyled' }}">
+  <div class="{{ list_class or 'dataset-list unstyled' }}">
     {% for source in sources %}
       {% snippet 'snippets/source_item.html', source=source, item_class=item_class, hide_resources=hide_resources, banner=banner, truncate=truncate, truncate_title=truncate_title, within_organization=within_organization %}
     {% endfor %}
-  </ul>
+  </div>
 {% endif %}
