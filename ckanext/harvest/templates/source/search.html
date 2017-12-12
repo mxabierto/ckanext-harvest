@@ -25,7 +25,7 @@
   {% else %}
     {# > CKAN 2.0 #}
 
-    <section class="module">
+    <div class="search-form">
       <div class="module-content">
         {% block page_primary_action %}
           <div class="page_primary_action">
@@ -52,9 +52,8 @@
         {{ h.snippet('snippets/source_list.html', sources=c.page.items, show_organization=true) }}
 
       </div>
-
       {{ c.page.pager(q=c.q) }}
-    </section>
+    </div>
 
   {% endif %}
 

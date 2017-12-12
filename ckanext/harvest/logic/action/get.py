@@ -106,13 +106,21 @@ def harvest_source_show_status(context, data_dict):
     out['last_job'] = harvest_job_dictize(last_job, context)
 
     # Overall statistics
-    packages = model.Session.query(model.Package) \
-            .join(harvest_model.HarvestObject) \
-            .filter(harvest_model.HarvestObject.harvest_source_id==source.id) \
-            .filter(harvest_model.HarvestObject.current==True) \
-            .filter(model.Package.state==u'active') \
-            .filter(model.Package.private==False)
-    out['total_datasets'] = packages.count()
+    adds = 0
+    deleteds = 0
+    for job in jobs:
+        dict_job = harvest_job_dictize(job, context)
+        adds += dict_job['stats']['added']
+        deleteds += dict_job['stats']['deleted']
+
+    out['total_datasets'] = adds - deleteds
+    #packages = model.Session.query(model.Package) \
+    #        .join(harvest_model.HarvestObject) \
+    #        .filter(harvest_model.HarvestObject.harvest_source_id==source.id)
+    #        .filter(harvest_model.HarvestObject.current==True)
+            #.filter(model.Package.state==u'active') \
+            #.filter(model.Package.private==False) \
+    #out['total_datasets'] = packages.count()
 
     return out
 
