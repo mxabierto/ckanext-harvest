@@ -20,7 +20,7 @@ Example:
 {% set source_type = h.get_pkg_dict_extra(source, 'source_type') %}
 {% set url = h.url_for('harvest_admin', id=source.name) if within_organization else h.url_for('harvest_read', id=source.name) %}
 
-<li class="{{ item_class or "dataset-item" }}">
+<div class="{{ item_class or "dataset-item" }}">
   <div class="dataset-content">
     <h3 class="dataset-heading">
       {{ h.link_to(h.truncate(title, truncate_title), url) }}
@@ -47,4 +47,4 @@ Example:
     </p>
 
   </div>
-</li>
+</div>

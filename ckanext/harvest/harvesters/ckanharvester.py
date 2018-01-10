@@ -4,15 +4,13 @@ import httplib
 import datetime
 import socket
 
-from sqlalchemy import exists
-
 from ckan import model
 from ckan.logic import ValidationError, NotFound, get_action
 from ckan.lib.helpers import json
 from ckan.lib.munge import munge_name
 from ckan.plugins import toolkit
 
-from ckanext.harvest.model import HarvestJob, HarvestObject, HarvestGatherError
+from ckanext.harvest.model import HarvestObject
 
 import logging
 log = logging.getLogger(__name__)
@@ -199,7 +197,7 @@ class CKANHarvester(HarvesterBase):
 
         # Ideally we can request from the remote CKAN only those datasets
         # modified since the last completely successful harvest.
-        last_error_free_job = self._last_error_free_job(harvest_job)
+        last_error_free_job = self.last_error_free_job(harvest_job)
         log.debug('Last error-free job: %r', last_error_free_job)
         if (last_error_free_job and
                 not self.config.get('force_all', False)):
@@ -231,7 +229,7 @@ class CKANHarvester(HarvesterBase):
                 log.info('No datasets have been updated on the remote '
                          'CKAN instance since the last harvest job %s',
                          last_time)
-                return None
+                return []
 
         # Fall-back option - request all the datasets from the remote CKAN
         if get_all_packages:
@@ -250,7 +248,7 @@ class CKANHarvester(HarvesterBase):
             self._save_gather_error(
                 'No datasets found at CKAN: %s' % remote_ckan_base_url,
                 harvest_job)
-            return None
+            return []
 
         # Create harvest objects for each dataset
         try:
@@ -352,32 +350,6 @@ class CKANHarvester(HarvesterBase):
 
         return pkg_dicts
 
-    @classmethod
-    def _last_error_free_job(cls, harvest_job):
-        # TODO weed out cancelled jobs somehow.
-        # look for jobs with no gather errors
-        jobs = \
-            model.Session.query(HarvestJob) \
-                 .filter(HarvestJob.source == harvest_job.source) \
-                 .filter(HarvestJob.gather_started != None) \
-                 .filter(HarvestJob.status == 'Finished') \
-                 .filter(HarvestJob.id != harvest_job.id) \
-                 .filter(
-                     ~exists().where(
-                         HarvestGatherError.harvest_job_id == HarvestJob.id)) \
-                 .order_by(HarvestJob.gather_started.desc())
-        # now check them until we find one with no fetch/import errors
-        # (looping rather than doing sql, in case there are lots of objects
-        # and lots of jobs)
-        for job in jobs:
-            for obj in job.objects:
-                if obj.current is False and \
-                        obj.report_status != 'not modified':
-                    # unsuccessful, so go onto the next job
-                    break
-            else:
-                return job
-
     def fetch_stage(self, harvest_object):
         # Nothing to do here - we got the package dict in the search in the
         # gather stage
@@ -428,8 +400,20 @@ class CKANHarvester(HarvesterBase):
 
                 for group_ in package_dict['groups']:
                     try:
-                        data_dict = {'id': group_['id']}
-                        group = get_action('group_show')(base_context.copy(), data_dict)
+                        try:
+                            if 'id' in group_:
+                                data_dict = {'id': group_['id']}
+                                group = get_action('group_show')(base_context.copy(), data_dict)
+                            else:
+                                raise NotFound
+
+                        except NotFound, e:
+                            if 'name' in group_:
+                                data_dict = {'id': group_['name']}
+                                group = get_action('group_show')(base_context.copy(), data_dict)
+                            else:
+                                raise NotFound
+                        # Found local group
                         validated_groups.append({'id': group['id'], 'name': group['name']})
 
                     except NotFound, e:
@@ -512,7 +496,7 @@ class CKANHarvester(HarvesterBase):
             if default_extras:
                 override_extras = self.config.get('override_extras', False)
                 if not 'extras' in package_dict:
-                    package_dict['extras'] = {}
+                    package_dict['extras'] = []
                 for key, value in default_extras.iteritems():
                     existing_extra = get_extra(key, package_dict)
                     if existing_extra and not override_extras:

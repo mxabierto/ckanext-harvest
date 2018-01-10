@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 import sys, os
 
-version = '0.0.5'
+version = '1.1.0'
 
 setup(
 	name='ckanext-harvest',
@@ -16,7 +16,7 @@ setup(
 	url='http://ckan.org/wiki/Extensions',
 	license='AGPL',
 	packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
-	namespace_packages=['ckanext', 'ckanext.harvest'],
+	namespace_packages=['ckanext'],
 	include_package_data=True,
 	zip_safe=False,
 	install_requires=[
@@ -27,6 +27,7 @@ setup(
 		'nose',
 		'mock',
 	],
+	#dkan_harvester=ckanext.harvest.harvesters:DKANHarvester
 	test_suite = 'nose.collector',
 	entry_points=\
 	"""
