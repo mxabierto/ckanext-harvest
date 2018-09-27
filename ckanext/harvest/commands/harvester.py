@@ -414,8 +414,8 @@ class Harvester(CkanCommand):
     def run_harvester(self):
         context = {'model': model, 'user': self.admin_user['name'],
                    'session': model.Session}
-        print "hola"
-        print model
+        print("hola")
+        print(mode)
         get_action('harvest_jobs_run')(context, {}) 
 
     def run_test_harvest(self):
